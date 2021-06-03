@@ -4,7 +4,17 @@
 % TDA Publicacion]
 
 % Constructores
+% En proceso...
+
 % Pertenencia
+esListaPublicaciones([]).
+esListaPublicaciones([CabezaLP|_]) :- not(esCuenta(CabezaLP)), !, fail.
+esListaPublicaciones([_|RestoLP]) :- esListaCuentas(RestoLP).
+
 % Selectores
+% En proceso...
+
 % Modificadores
+agregarPublicacion(NuevaP, LP, LPAct) :- concatenar([NuevaP], LP, LPAct).
+
 % Otros

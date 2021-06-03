@@ -1,4 +1,5 @@
-%ESTE ARCHIVO NO ES UN TDA, SOLO GUARDARA UN CONJUNTO DE REGLAS NECESARIAS PARA EL TRABAJO CON LISTAS A REALIZAR EN EL LABORATORIO.
+% ESTE ARCHIVO NO ES UN TDA, SOLO GUARDARA UN CONJUNTO DE PREDICADOS
+% NECESARIOS PARA EL TRABAJO CON LISTAS A REALIZAR EN ESTE LABORATORIO.
 
 %Largo de la lista
 largo([], Cont):-
@@ -12,12 +13,8 @@ esLista([]).
 esLista([_|_]).
 
 %Predicado modificador que agrega un elemento a una lista
-agregarAStack([],B,B).
-agregarAStack([X|D],B,[X|E]):-agregarAStack(D,B,E).
-
-%Predicado que revisa si el elemento ingresado existe en la lista
-estaEnStack(R, [R|_]).
-estaEnStack(R,[_|S]) :- estaEnStack(R,S).
+concatenar([],B,B).
+concatenar([X|D],B,[X|E]):-concatenar(D,B,E).
 
 /* Predicado que genera el siguiente reemplazo:
  * [X|List] : Lista original
@@ -25,6 +22,7 @@ estaEnStack(R,[_|S]) :- estaEnStack(R,S).
  * Y : Elemento modificado (Reemplazo)
  * [Y|List] : Lista modificada
 */
+
 reemplazar([X|List], X, Y, [Y|List]).
 reemplazar([Xf|XList], X, Y, [Xf|YList]) :-
     reemplazar(XList, X, Y, YList).
@@ -33,7 +31,6 @@ reemplazar([Xf|XList], X, Y, [Xf|YList]) :-
 %manipular(2, [1,2,3], X). -> elimina 2
 %manipular(2, X, [1,2,3]). -> agrega 2 al inicio
 manipular(Elemento,[Elemento|Tail1],Tail1).
-
 manipular(Elemento,[Head|Tail1],[Head|Tail2]) :-
         manipular(Elemento,Tail1,Tail2).
 
