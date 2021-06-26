@@ -19,11 +19,12 @@ getListaReacciones(CSN, ListaReacciones) :-       [_|[_|[_|[ListaReacciones|_]]]
 
 %Pertenencia
 esContenidoSN(CSN) :- not(esLista(CSN)), !, fail.
-esContenidoSN(CSN) :- largo(CSN, L), L \== 4, !, fail.
+esContenidoSN(CSN) :- largo(CSN, L), L =\= 4, !, fail.
 esContenidoSN(CSN) :- getUsuarioLogueado(CSN, UsuarioLogueado), not(string(UsuarioLogueado)), !, fail.
 esContenidoSN(CSN) :- getListaCuentas(CSN, ListaCuentas), not(esListaCuentas(ListaCuentas)), !, fail.
 esContenidoSN(CSN) :- getListaPublicaciones(CSN, ListaPublicaciones), not(esListaPublicaciones(ListaPublicaciones)), !, fail.
 esContenidoSN(CSN) :- getListaReacciones(CSN, ListaReacciones), not(esListaReacciones(ListaReacciones)), !, fail.
+esContenidoSN(_) :- !, true.
 
 %Modificadores
 actualizarContenidoSN(UsuarioLogueado, ListaCuentas, ListaPublicaciones, ListaReacciones, ContenidoSNAct) :-

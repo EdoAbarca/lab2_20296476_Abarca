@@ -19,7 +19,7 @@ getCompartidoP(P, Comp) :-      [_|[_|[_|[_|[_|[_|[_|[Comp|_]]]]]]]] = P.
 
 % Pertenencia
 esPublicacion(P) :- not(esLista(P)), !, fail.
-esPublicacion(P) :- largo(P, L), L \== 8, !, fail.
+esPublicacion(P) :- largo(P, L), L =\= 8, !, fail.
 esPublicacion(P) :- getIdP(P, Id), getIdOriginalP(P, IdOP), getFechaP(P, Fecha), getCuentaAutorP(P, Cuenta), getTipoP(P, Tipo), getContenidoP(P, Cont), getMuroP(P, Muro), getCompartidoP(P, Comp),
                     integer(Id), integer(IdOP), esFecha(Fecha), string(Cuenta), string(Tipo), string(Cont), string(Muro), esLista(Comp).
 

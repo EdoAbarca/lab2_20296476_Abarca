@@ -16,7 +16,7 @@ getContenidoR(R, ContenidoR) :- [_|[_|[_|[_|[_|[ContenidoR|_]]]]]] = R.
 
 % Pertenencia
 esReaccion(R) :- not(esLista(R)), !, fail.
-esReaccion(R) :- largo(R, L), L \== 6, !, fail.
+esReaccion(R) :- largo(R, L), L =\= 6, !, fail.
 esReaccion(R) :- getIdPR(R, IdPR), getIdR(R, IdR), getFechaR(R, Fecha), getCuentaR(R, Cuenta), getTipoR(R, TipoR), getContenidoR(R, ContenidoR),
     integer(IdPR), integer(IdR), esFecha(Fecha), string(Cuenta), string(TipoR), string(ContenidoR).
 

@@ -13,10 +13,11 @@ getContenidoSN(SN, ContenidoSN) :- [_|[_|[ContenidoSN|_]]] = SN.
 
 %Pertenencia
 esSocialNetwork(SN) :- not(esLista(SN)), !, fail.
-esSocialNetwork(SN) :- largo(SN, L), L\== 3, !, fail.
+esSocialNetwork(SN) :- largo(SN, L), L =\= 3, !, fail.
 esSocialNetwork(SN) :- getNombreSN(SN, NombreSN), not(string(NombreSN)), !, fail.
 esSocialNetwork(SN) :- getFechaRegistroSN(SN, FechaSN), not(esFecha(FechaSN)), !, fail.
 esSocialNetwork(SN) :- getContenidoSN(SN, ContenidoSN), not(esContenidoSN(ContenidoSN)), !, fail.
+esSocialNetwork(_) :- !, true.
 
 %Modificadores
 actualizarSocialNetwork(SN, ContenidoSNAct, SNAct) :- getNombreSN(SN, NombreSN), getFechaRegistroSN(SN, FechaSN),
