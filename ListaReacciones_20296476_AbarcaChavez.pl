@@ -7,8 +7,8 @@
 
 % Pertenencia
 esListaReacciones([]).
-esListaReacciones([CabezaLR|_]) :- not(esCuenta(CabezaLR)), !, fail.
-esListaReacciones([_|RestoLR]) :- esListaCuentas(RestoLR).
+esListaReacciones([CabezaLR|_]) :- not(esReaccion(CabezaLR)), !, fail.
+esListaReacciones([_|RestoLR]) :- esListaReacciones(RestoLR).
 
 % Selectores
 % En proceso...
@@ -17,3 +17,4 @@ esListaReacciones([_|RestoLR]) :- esListaCuentas(RestoLR).
 agregarReaccion(NuevaReaccion, LR, LRAct) :- concatenar([NuevaReaccion], LR, LRAct).
 
 % Otros
+% En proceso...

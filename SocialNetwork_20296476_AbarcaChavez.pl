@@ -4,7 +4,7 @@
 
 %Constructores
 socialNetworkVacio(Nombre, Fecha, SN) :- contenidoSNVacio(CSNV), SN = [Nombre, Fecha, CSNV].
-socialNetwork(Nombre, Fecha, SN) :- contenidoSNCustom(CSNC), SN = [Nombre, Fecha, CSNC].
+%socialNetwork(Nombre, Fecha, SN) :- contenidoSNCustom(CSNC), SN = [Nombre, Fecha, CSNC].
 
 %Selectores
 getNombreSN(SN, NombreSN) :- [NombreSN|_] = SN.
@@ -15,11 +15,11 @@ getContenidoSN(SN, ContenidoSN) :- [_|[_|[ContenidoSN|_]]] = SN.
 esSocialNetwork(SN) :- not(esLista(SN)), !, fail.
 esSocialNetwork(SN) :- largo(SN, L), L\== 3, !, fail.
 esSocialNetwork(SN) :- getNombreSN(SN, NombreSN), not(string(NombreSN)), !, fail.
-esSocialNetwork(SN) :- getNombreSN(SN, NombreSN), not(NombreSN == "Facebook"; NombreSN == "Twitter"; NombreSN == "Instagram"), !, fail.
 esSocialNetwork(SN) :- getFechaRegistroSN(SN, FechaSN), not(esFecha(FechaSN)), !, fail.
 esSocialNetwork(SN) :- getContenidoSN(SN, ContenidoSN), not(esContenidoSN(ContenidoSN)), !, fail.
 
 %Modificadores
-actualizarSocialNetwork(NombreSN, FechaSN, ContenidoSNAct, SNAct) :- SNAct = [NombreSN, FechaSN, ContenidoSNAct].
+actualizarSocialNetwork(SN, ContenidoSNAct, SNAct) :- getNombreSN(SN, NombreSN), getFechaRegistroSN(SN, FechaSN),
+    			SNAct = [NombreSN, FechaSN, ContenidoSNAct].
 
 %Otros

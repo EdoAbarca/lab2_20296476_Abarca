@@ -12,7 +12,11 @@ largo([_|Y], Cont):-
 esLista([]).
 esLista([_|_]).
 
-%Predicado modificador que agrega un elemento a una lista
+/*
+Predicado modificador que agrega un elemento al final de una lista
+[X|D]: Lista entrada
+B: Elemento a ingresar
+[X|E]: Lista con elemento ingresado al final de la lista*/
 concatenar([],B,B).
 concatenar([X|D],B,[X|E]):-concatenar(D,B,E).
 

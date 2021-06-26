@@ -7,7 +7,7 @@
 
 % Pertenencia
 esListaCuentas([]).
-esListaCuentas([CabezaLC|_]) :- not(esCuenta(CabezaLC)), !, fail.
+esListaCuentas([CabezaLC|_]) :- not(esCuentaUsuario(CabezaLC)), !, fail.
 esListaCuentas([_|RestoLC]) :- esListaCuentas(RestoLC).
 
 % Selectores
@@ -21,4 +21,12 @@ agregarCuenta(ListaCuentas, NuevaCuenta, ListaCuentasAct) :- concatenar([NuevaCu
 % En proceso...
 
 % Otros
-% En proceso...
+% Verificar que el usuario no esté en uso
+estaUsuarioDisponible(_, []).
+estaUsuarioDisponible(U, [HLU|_]) :- getUsuarioC(U, NombreAUsar), getUsuarioC(HLU, NombreEnUso), NombreAUsar == NombreEnUso, !, fail.
+estaUsuarioDisponible(U, [_|ALU]) :- estaUsuarioDisponible(U, ALU).
+
+%Validar credenciales ingresadas para iniciar sesion
+validarCredenciales(_, _, []) :- !, fail.
+validarCredenciales(User, Pass, [HLU|_]) :- getUsuarioC(HLU, Usuario), getConstraseniaC(HLU, Contra), User == Usuario, Pass == Contra.
+validarCredenciales(User, Pass, [_|ALU]) :- validarCredenciales(User, Pass, ALU).
