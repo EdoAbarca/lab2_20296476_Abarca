@@ -11,14 +11,16 @@ esListaCuentas([CabezaLC|_]) :- not(esCuentaUsuario(CabezaLC)), !, fail.
 esListaCuentas([_|RestoLC]) :- esListaCuentas(RestoLC).
 
 % Selectores
-% En proceso...
+getCuentaXUsuario([], _, _) :- !, fail.
+getCuentaXUsuario([LCH|_], Usuario, Cuenta) :- getUsuarioC(LCH, UActual), UActual == Usuario, Cuenta = LCH.
+getCuentaXUsuario([_|LCT], Usuario, Cuenta) :- getCuentaXUsuario(LCT, Usuario, Cuenta).
 
 % Modificadores
 % Agregar nueva cuenta
 agregarCuenta(ListaCuentas, NuevaCuenta, ListaCuentasAct) :- concatenar([NuevaCuenta], ListaCuentas, ListaCuentasAct).
 
-% Modificar cuenta (principalmente por temas de seguidores/seguidos)
-% En proceso...
+% Actualizar cuenta (principalmente por temas de seguidores/seguidos)
+actualizarListaCuentas(ListaCuentas, CuentaOr, CuentaAct, ListaCuentasAct) :- reemplazar(ListaCuentas, CuentaOr, CuentaAct, ListaCuentasAct).
 
 % Otros
 % Verificar que el usuario no esté en uso
@@ -30,3 +32,8 @@ estaUsuarioDisponible(U, [_|ALU]) :- estaUsuarioDisponible(U, ALU).
 validarCredenciales(_, _, []) :- !, fail.
 validarCredenciales(User, Pass, [HLU|_]) :- getUsuarioC(HLU, Usuario), getConstraseniaC(HLU, Contra), User == Usuario, Pass == Contra.
 validarCredenciales(User, Pass, [_|ALU]) :- validarCredenciales(User, Pass, ALU).
+
+%Verificador que revisa si los usuarios ingresados como destinatarios estan en los contactos del usuario logueado
+validarDestinos([], _, _).
+validarDestinos([DestActual|_], UL, LC) :- getCuentaXUsuario(LC, UL, CuentaUL), getSeguidosC(CuentaUL, SeguidosUL), not(estaEnSeguidos(DestActual, SeguidosUL)), !, fail.
+validarDestinos([_|RestoDestinos], UL, LC) :- validarDestinos(RestoDestinos, UL, LC).

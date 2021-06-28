@@ -56,11 +56,14 @@ Ejemplos de uso:
 Predicado socialNetworkPost, debe realizar una publicacion en la red social al usuario con sesion iniciada
 Entrada:
 Salida:
+
+Se uso predicado corte para abarcar los 2 casos de este predicado (Publicacion propia | dirigida a usuarios en contactos)
 */
-socialNetworkPost(Sn1, Fecha, Texto, ListaUsernamesDest, Sn2) :- esSocialNetwork(Sn1), (var(Sn2);esSocialNetwork(Sn2)), esLista(ListaUsernamesDest), 
-                                getContenidoSn(Sn1, ContSN), getUsuarioLogueado(ContSN, UL), getListaCuentas(ContSN, LC), getListaPublicaciones(ContSN, LP), getListaReacciones(ContSN, LR),
-                                UL \== "", filtrarDestinos(ListaUsernamesDest, LU, UL ,ListaUserAct), largo(LP, LLP), Id is LLP + 1, crearPublicacion(Id, Fecha, UL, Texto, ListaUserAct, NewP), agregarPublicacion(LP, NewP, LP2),
-                                actualizarContenidoSN("", LU, LC, LP2, LR, ContSN2), actualizarSocialNetwork(Sn1, ContSN2, Sn1Act), Sn2 = Sn1Act.
+socialNetworkPost(Sn1, _, Texto, ListUsernamesDest, Sn2) :- not(esSocialNetwork(Sn1)); not(var(Sn2);esSocialNetwork(Sn2)); not(esLista(ListUsernamesDest)); not(string(Texto)), !, fail.
+socialNetworkPost(Sn1, _, _, _, _) :- getContenidoSN(Sn1, ContSN), getUsuarioLogueado(ContSN, UL), UL == "", !, fail.
+socialNetworkPost(Sn1, _, _, ListUsernamesDest, _) :- getContenidoSN(Sn1, ContSN), getUsuarioLogueado(ContSN, UL), getListaCuentas(ContSN, LC), not(validarDestinos(ListaUsernamesDest, UL, LC)), !, fail.
+socialNetworkPost(Sn1, Fecha, Texto, ListUsernamesDest, Sn2) :- largo(ListUsernamesDest, L), L == 0, largo(LP, LargoLP), Id is LargoLP + 1, crearPublicacion(Id, Fecha, Texto, UL, UL, NuevaP), agregarPublicacion(LP, NuevaP, LPAct), actualizarContenidoSN("", LC, LPAct, LR, ContSNAct), actualizarSocialNetwork(Sn1, ContSNAct, Sn1Act), Sn1Act = Sn2, !.
+socialNetworkPost(Sn1, Fecha, Texto, ListUsernamesDest, Sn2) :- largo(ListUsernamesDest, L), L > 0, generarPublicacionesADirigir(ListUsernamesDest, Fecha, UL, Texto, LP, LPAct), actualizarContenidoSN("", LC, LPAct, LR, ContSNAct), actualizarSocialNetwork(Sn1, ContSNAct, Sn1Act), Sn1Act = Sn2, !.
 /*
 Ejemplos de uso:
 
@@ -74,10 +77,11 @@ Predicado socialNetworkFollow, debe realizar la actualizacion de seguimiento del
 Entrada:
 Salida:
 */
-socialNetworkFollow(Sn1, Username, Sn2) :- esSocialNetwork(Sn1), string(Username),
-                                getContenidoSn(Sn1, ContSN), getUsuarioLogueado(ContSN, UL), getListaCuentas(ContSN, LC), getListaPublicaciones(ContSN, LP), getListaReacciones(ContSN, LR),
-                                UL \== "", getCuentaXUsuario(LC, Username, C1), agregarSeguidor(), getCuentaXUsuario(LC, UL, C2), agregarSeguimiento(), actualizarCuenta(),
-                                actualizarContenidoSN("", LU, LC2, LP, LR, ContSN2), actualizarSocialNetwork(Sn1, ContSN2, Sn1Act), Sn2 = Sn1Act.
+socialNetworkFollow(Sn1, Username, Sn2) :- esSocialNetwork(Sn1), (var(Sn2);esSocialNetwork(Sn2)), string(Username),
+                                getContenidoSN(Sn1, ContSN), getUsuarioLogueado(ContSN, UL), getListaCuentas(ContSN, LC), getListaPublicaciones(ContSN, LP), getListaReacciones(ContSN, LR),
+                                UL \== "", Username \== UL, sePuedeSeguir(Username, UL, LC), getCuentaXUsuario(Username, LC, CuentaUsername), getCuentaXUsuario(UL, LC, CuentaUL), getSeguidosC(CuentaUL, SeguidosUL), getSeguidoresC(CuentaUsername, SeguidoresUsername),
+    							agregarSeguidor(SeguidoresUsername, UL, SeguidoresUsernameAct), agregarSeguimiento(SeguidosUL, Username, SeguidosULAct), actualizarSeguidosCuenta(CuentaUL, SeguidosUL, SeguidosULAct, CuentaULAct), actualizarSeguidoresCuenta(CuentaUsername, SeguidoresUsername, SeguidoresUsernameAct, CuentaUsernameAct), 
+                                actualizarListaCuentas(LC, CuentaUsername, CuentaUsernameAct, LC2), actualizarListaCuentas(LC2, CuentaUL, CuentaULAct, LC3), actualizarContenidoSN("", LC3, LP, LR, ContSN2), actualizarSocialNetwork(Sn1, ContSN2, Sn1Act), Sn2 = Sn1Act.
 /*
 Ejemplos de uso:
 
@@ -90,11 +94,14 @@ Ejemplos de uso:
 Predicado socialNetworkShare, debe compartir una publicacion, sea en espacio del usuario logueado o en contacto de este
 Entrada:
 Salida:
+
+Se uso predicado corte para abarcar los 2 casos de este predicado (Compartir en espacio propio/De usuarios en contactos)
 */
-socialNetworkShare(Sn1, Fecha, PostId, ListaUsernamesDest, Sn2). :- esSocialNetwork(Sn1), esFecha(Fecha), integer(PostId), esLista(ListaUsernamesDest),
-                            getContenidoSn(Sn1, ContSN), getUsuarioLogueado(ContSN, UL), getListaCuentas(ContSN, LC), getListaPublicaciones(ContSN, LP), getListaReacciones(ContSN, LR),
-                            UL \== "", filtrarContactos(ListaUsernamesDest, UL, ListaDestAct), getPublicacionXId(LP, PostId, P), agregarCompartidos(ListaDestAct, P, PAct), actualizarPublicaciones(LP, PAct, LP2),
-                            actualizarContenidoSN("", LU, LC2, LP, LR, ContSN2), actualizarSocialNetwork(Sn1, ContSN2, Sn1Act), Sn2 = Sn1Act.
+socialNetworkShare(Sn1, _, PostId, ListaUsernamesDest, Sn2) :- not(esSocialNetwork(Sn1)); not(var(Sn2);esSocialNetwork(Sn2)); not(integer(PostId)); not(esLista(ListaUsernamesDest)), !, fail.
+socialNetworkShare(Sn1, _, _, _, _) :- getContenidoSN(Sn1, ContSN), getUsuarioLogueado(ContSN, UL), UL == "", !, fail.
+socialNetworkShare(Sn1, _, _, ListaUsernamesDest, _) :- getContenidoSN(Sn1, ContSN), getUsuarioLogueado(ContSN, UL), getListaCuentas(ContSN, LC), not(validarDestinos(ListaUsernamesDest, UL, LC)), !, fail.
+socialNetworkShare(Sn1, Fecha, PostId, ListaUsernamesDest, Sn2) :- largo(ListaUsernameDest, L), L == 0, !.
+socialNetworkShare(Sn1, Fecha, PostId, ListaUsernamesDest, Sn2) :- largo(ListaUsernameDest, L), L > 0, !.
 /*
 Ejemplos de uso:
 
