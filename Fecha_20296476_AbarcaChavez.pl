@@ -2,21 +2,21 @@
 % Composicion: [Dia, Mes, Anio] -> [integer, integer, integer]
 
 %Constructores
-fecha(Dia, Mes, Anio, F) :- F = [Dia, Mes, Anio].
+fecha(Dia, Mes, Anio, Fecha) :- Fecha = [Dia, Mes, Anio].
 %Selectores
-obtenerDia(F, Dia) :- [Dia|_] = F.
-obtenerMes(F, Mes) :- [_|[Mes|_]] = F.
-obtenerAnio(F, Anio) :- [_|[_|[Anio|_]]] = F.
+obtenerDia(Fecha, Dia) :-   [Dia|_] = Fecha.
+obtenerMes(Fecha, Mes) :-   [_|[Mes|_]] = Fecha.
+obtenerAnio(Fecha, Anio) :- [_|[_|[Anio|_]]] = Fecha.
 
 %Pertenencia
 %Pasos para verificar validez TDA Fecha:
 %1) Debe ser una lista con 3 elementos
-esFecha(F) :- not(esLista(F)), !, fail.
-esFecha(F) :- largo(F, L), L =\= 3, !, fail.
+esFecha(Fecha) :- not(esLista(Fecha)), !, fail.
+esFecha(Fecha) :- largo(Fecha, L), L =\= 3, !, fail.
 %2) Los elementos dentro de la lista deben ser enteros
-esFecha(F) :- obtenerDia(F, Dia), not(integer(Dia)), !, fail.
-esFecha(F) :- obtenerMes(F, Mes), not(integer(Mes)), !, fail.
-esFecha(F) :- obtenerAnio(F, Anio), not(integer(Anio)), !, fail.
+esFecha(Fecha) :- obtenerDia(Fecha, Dia), not(integer(Dia)), !, fail.
+esFecha(Fecha) :- obtenerMes(Fecha, Mes), not(integer(Mes)), !, fail.
+esFecha(Fecha) :- obtenerAnio(F, Anio), not(integer(Anio)), !, fail.
 %3) Se debe verificar el dominio de cada elemento
 /*
  * Dominios a considerar:
@@ -29,22 +29,26 @@ esFecha(F) :- obtenerAnio(F, Anio), not(integer(Anio)), !, fail.
  *  - 1,3,5,7,8,10,12: 1-31 dias
  *  - 4,6,9,11: 1-30 dias
 */
-esFecha(F) :- obtenerDia(F, Dia), (Dia > 31 ; Dia < 1), !, fail.
-esFecha(F) :- obtenerMes(F, Mes), (Mes > 12 ; Mes < 1), !, fail.
-esFecha(F) :- obtenerAnio(F, Anio), (Anio > 2021 ; Anio < 1972), !, fail.
+esFecha(Fecha) :- obtenerDia(Fecha, Dia), (Dia > 31 ; Dia < 1), !, fail.
+esFecha(Fecha) :- obtenerMes(Fecha, Mes), (Mes > 12 ; Mes < 1), !, fail.
+esFecha(Fecha) :- obtenerAnio(Fecha, Anio), (Anio > 2021 ; Anio < 1972), !, fail.
 %Fecha limite para fecha actual, sujeta a entrega de esta implementacion
-esFecha(F) :- obtenerDia(F, Dia), obtenerMes(F, Mes), obtenerAnio(F, Anio), (Mes >= 7), (Anio >= 2021), (Dia > 2), !, fail.
+esFecha(Fecha) :- obtenerDia(Fecha, Dia), obtenerMes(Fecha, Mes), obtenerAnio(Fecha, Anio), (Mes >= 7), (Anio >= 2021), (Dia > 2), !, fail.
 %Casos por mes
 %Febrero
-esFecha(F) :- obtenerDia(F, Dia), obtenerMes(F, Mes), obtenerAnio(F, Anio), Mes == 2, Bisiesto is mod(Anio, 4), Bisiesto \== 0, Dia > 28, !, fail.
-esFecha(F) :- obtenerDia(F, Dia), obtenerMes(F, Mes), obtenerAnio(F, Anio), Mes == 2, Bisiesto is mod(Anio, 4), Bisiesto == 0, Dia > 29, !, fail.
+esFecha(Fecha) :- obtenerDia(Fecha, Dia), obtenerMes(Fecha, Mes), obtenerAnio(Fecha, Anio), Mes == 2, Bisiesto is mod(Anio, 4), Bisiesto =\= 0, Dia > 28, !, fail.
+esFecha(Fecha) :- obtenerDia(Fecha, Dia), obtenerMes(Fecha, Mes), obtenerAnio(Fecha, Anio), Mes == 2, Bisiesto is mod(Anio, 4), Bisiesto == 0, Dia > 29, !, fail.
 %Meses con 30 dias
-esFecha(F) :- obtenerDia(F, Dia), obtenerMes(F, Mes),
+esFecha(Fecha) :- obtenerDia(Fecha, Dia), obtenerMes(Fecha, Mes),
     (Mes == 4; Mes == 6; Mes == 9; Mes == 11), Dia > 30, !, fail.
 % Meses con 31 dias esta cubierto por la sentencia del predicado que verifica el dominio de esta, por lo que no sera implementado.
 % Todos los dominios verificados, el elemento ingresado es un TDA Fecha. ¿Es necesario el '!'?
 esFecha(_) :- !, true.
 
 %Modificadores
+%Sin modificadores.
 
 %Otros
+% Pasar TDA Fecha a string
+fechaAString(Fecha, StringF) :- obtenerDia(Fecha, Dia), number_string(Dia, DiaString) obtenerMes(Fecha, Mes), number_string(Mes, MesString), obtenerAnio(Fecha, Anio), number_string(Anio, AnioString),
+                string_concat(DiaString, "/", Parte1S), string_concat(MesString, "/", Parte2S), string_concat(Parte1S, Parte2S, StringDiaYMes), string_concat(StringDiaYMes, AnioString, StringFecha), StringF = StringFecha.

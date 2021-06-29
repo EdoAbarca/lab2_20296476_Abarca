@@ -8,22 +8,26 @@
 
 % Pertenencia
 esListaPublicaciones([]).
-esListaPublicaciones([CabezaLP|_]) :- not(esPublicacion(CabezaLP)), !, fail.
-esListaPublicaciones([_|RestoLP]) :- esListaCuentas(RestoLP).
+esListaPublicaciones([LPH|_]) :- not(esPublicacion(LPH)), !, fail.
+esListaPublicaciones([_|LPT]) :- esListaCuentas(LPT).
 
 % Selectores
-getPublicacionXId(IdPost, [], P) :- !, fail.
-getPublicacionXId(IdPost, [PActual|_], P) :- getIdP(PActual, IdP), IdP == IdPost, P = PActual.
-getPublicacionXId(IdPost, [_|RestoLP], P) :- getPublicacionXId(IdPost, RestoLP, P).
+getPublicacionXId(_, [], _) :- !, fail.
+getPublicacionXId(PostId, [LPH|_], Publicacion) :- getIdP(LPH, IdP), IdP == PostId, Publicacion = LPH.
+getPublicacionXId(PostId, [_|LPT], Publicacion) :- getPublicacionXId(PostId, LPT, Publicacion).
 
 % Modificadores
-agregarPublicacion(NuevaP, LP, LPAct) :- concatenar([NuevaP], LP, LPAct).
+agregarPublicacion(Publicacion, LP, LPAct) :- concatenar([Publicacion], LP, LPAct).
 
 % Otros
 % Generador de publicaciones creadas a contactos de usuario
-generarPublicacionesADirigir([], Fecha, UL, Cont, LP, LPOut) :- LPOut = LP.
-generarPublicacionesADirigir([DestinoActual|RestoDestinos], Fecha, UL, Cont, LP, LPOut) :- largo(LP, LargoLP), Id is LargoLP + 1, crearPublicacion(Id, Fecha, Cont, UL, DestinoActual, P), agregarPublicacion(P, LP, LPAct), generarPublicacionesADirigir(RestoDestinos, Fecha, UL, Cont, LPAct, LPOut). 
+generarPublicacionesADirigir([], _, _, _, LP, LPOut) :- LPOut = LP.
+generarPublicacionesADirigir([DestinoActual|RestoDestinos], Fecha, UL, Contenido, LP, LPOut) :- largo(LP, LargoLP), Id is LargoLP + 1, crearPublicacion(Id, Fecha, Contenido, UL, DestinoActual, Publicacion), agregarPublicacion(Publicacion, LP, LPAct), generarPublicacionesADirigir(RestoDestinos, Fecha, UL, Contenido, LPAct, LPOut). 
 
 % Generador de publicaciones compartidas
-generarPublicacionesACompartir([], IdPost, Fecha, UL, LP, LPOut) :- LPOut = LP.
-generarPublicacionesACompartir([DestinoActual|RestoDestinos], IdPost, Fecha, UL, LP, LPOut) :- largo(LP, LargoLP), Id is LargoLP + 1, getPublicacionXId(IdPost, LP, P), ObtenerLasweas, crearPublicacionCompartida(Id, IdOP, Fecha, ContenidoP, AutorP, MuroP, UL, DestinoActual, PComp), agregarPublicacion(PComp, LP, LPAct), generarPublicacionesACompartir(RestoDestinos, Fecha, UL, Cont, LPAct, LPOut). 
+generarPublicacionesACompartir([], _, _, _, LP, LPOut) :- LPOut = LP.
+generarPublicacionesACompartir([DestinoActual|RestoDestinos], PostId, Fecha, UL, LP, LPOut) :- largo(LP, LargoLP), IdP is LargoLP + 1, getPublicacionXId(PostId, LP, Publicacion), getContenidoP(Publicacion, ContenidoP), getAutorP(Publicacion, AutorP), getMuroP(Publicacion, MuroP), crearPublicacionCompartida(IdP, PostId, Fecha, ContenidoP, AutorP, MuroP, UL, DestinoActual, PComp), agregarPublicacion(PComp, LP, LPAct), generarPublicacionesACompartir(RestoDestinos, PostId, Fecha, UL, LPAct, LPOut). 
+
+%Pasar de TDA ListaPublicaciones a string
+listaPublicacionesAString([], StringAux, StringLP) :- string_concat(StringAux, "\n\n", StringFinal), StringLP = StringFinal.
+listaPublicacionesAString([LPH|LPT], StringAux, StringLP) :- cuentaAString(LPH, StringPublicacion), string_concat(StringAux, StringPublicacion, StringTemp), listaPublicacionesAString(LPT, StringTemp, StringLP).

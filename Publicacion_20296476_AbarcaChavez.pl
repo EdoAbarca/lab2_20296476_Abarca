@@ -4,7 +4,7 @@
 
 % Constructores
 %Publicacion original
-crearPublicacion(IdP, FechaP, ContenidoP, AutorP, MuroP, P) :- P = [IdP, IdP, FechaP, "Texto", ContenidoP, AutorP, MuroP, "", ""].
+crearPublicacion(IdP, FechaP, ContenidoP, AutorP, MuroP, P) :- P = [IdP, 0, FechaP, "Texto", ContenidoP, AutorP, MuroP, "", ""].
 
 %Publicacion compartida
 crearPublicacionCompartida(IdP, IdOriginalP, FechaP, ContenidoP, AutorP, MuroP, ComparteP, RecibeP, PComp) :- PComp = [IdP, IdOriginalP, FechaP, "Texto", ContenidoP, AutorP, MuroP, ComparteP, RecibeP].
@@ -18,22 +18,34 @@ Para la publicacion compartida, lo que va a variar respecto a una publicacion or
 */
 
 % Selectores
-getIdP(P, Id) :-            [Id|_] = P. %Id actual por correlativo
-getIdOriginalP(P, IdOP) :-  [_|[IdOP|_]] = P. %Id publicacion original (Si Id == IdOP, esta es una publicacion original, a diferencia de una compartida, donde Id != IdOP)
-getFechaP(P, Fecha) :-      [_|[_|[Fecha|_]]] = P. %Fecha creacion publicacion
-getAutorP(P, Cuenta) :-     [_|[_|[_|[Cuenta|_]]]] = P. %Cuenta que originalmente creo la publicacion
-getTipoP(P, Tipo) :-        [_|[_|[_|[_|[Tipo|_]]]]] = P. %Tipo de publicacion (Por defecto, siempre sera "Texto")
-getContenidoP(P, Cont) :-   [_|[_|[_|[_|[_|[Cont|_]]]]]] = P. %Contenido de la publicacion
-getMuroP(P, Muro) :-        [_|[_|[_|[_|[_|[_|[Muro|_]]]]]]] = P. %Muro de usuario al que pertenece esta publicacion
-getComparteP(P, UComp) :-   [_|[_|[_|[_|[_|[_|[_|[UComp|_]]]]]]]] = P. %Usuario que comparte la publicacion
-getRecibeP(P, URec) :-      [_|[_|[_|[_|[_|[_|[_|[_|[URec|_]]]]]]]]] = P. %Usuario que recibe la publicacion compartida
+getIdP(Publicacion, IdP) :-                     [IdP|_] = Publicacion. %Id actual por correlativo
+getIdOriginalP(Publicacion, IdOriginalP) :-     [_|[IdOriginalP|_]] = Publicacion. %Id publicacion original (Si Id == IdOP, esta es una publicacion original, a diferencia de una compartida, donde Id != IdOP)
+getFechaP(Publicacion, FechaP) :-               [_|[_|[FechaP|_]]] = Publicacion. %Fecha creacion publicacion
+getTipoP(Publicacion, TipoP) :-     	        [_|[_|[_|[TipoP|_]]]] = Publicacion. %Tipo de publicacion (Por defecto, siempre sera "Texto")
+getContenidoP(Publicacion, ContenidoP) :-       [_|[_|[_|[_|[ContenidoP|_]]]]] = Publicacion. %Contenido de la publicacion
+getAutorP(Publicacion, AutorP) :-   	        [_|[_|[_|[_|[_|[AutorP|_]]]]]] = Publicacion. %Cuenta que originalmente creo la publicacion
+getMuroP(Publicacion, MuroP) :-                 [_|[_|[_|[_|[_|[_|[MuroP|_]]]]]]] = Publicacion. %Muro de usuario al que pertenece esta publicacion
+getComparteP(Publicacion, ComparteP) :-         [_|[_|[_|[_|[_|[_|[_|[ComparteP|_]]]]]]]] = Publicacion. %Usuario que comparte la publicacion
+getRecibeP(Publicacion, RecibeP) :-             [_|[_|[_|[_|[_|[_|[_|[_|[RecibeP|_]]]]]]]]] = Publicacion. %Usuario que recibe la publicacion compartida
 
 % Pertenencia
-esPublicacion(P) :- not(esLista(P)), !, fail.
-esPublicacion(P) :- largo(P, L), L =\= 9, !, fail.
-esPublicacion(P) :- getIdP(P, Id), getIdOriginalP(P, IdOP), getFechaP(P, Fecha), getAutorP(P, Cuenta), getTipoP(P, Tipo), getContenidoP(P, Cont), getMuroP(P, Muro), getComparteP(P, UComp), getRecibeP(P, URec),
-                    integer(Id), integer(IdOP), esFecha(Fecha), string(Cuenta), string(Tipo), string(Cont), string(Muro), string(UComp), string(URec).
+esPublicacion(Publicacion) :- not(esLista(Publicacion)), !, fail.
+esPublicacion(Publicacion) :- largo(Publicacion, L), L =\= 9, !, fail.
+esPublicacion(Publicacion) :- getIdP(Publicacion, IdP), getIdOriginalP(Publicacion, IdOriginalP), getFechaP(Publicacion, FechaP), getTipoP(Publicacion, TipoP), getContenidoP(Publicacion, ContenidoP), getAutorP(Publicacion, AutorP), getMuroP(Publicacion, MuroP), getComparteP(Publicacion, ComparteP), getRecibeP(Publicacion, RecibeP),
+                    integer(IdP), integer(IdOriginalP), esFecha(FechaP), string(TipoP), string(ContenidoP), string(AutorP), string(MuroP), string(ComparteP), string(RecibeP).
                  
 % Modificadores
 
 % Otros
+% Transformar de TDA Publicacion a string
+publicacionAString(Publicacion, StringP) :- getIdP(Publicacion, IdP), getIdOriginalP(Publicacion, IdOriginalP), getFechaP(Publicacion, FechaP), getTipoP(Publicacion, TipoP), getContenidoP(Publicacion, ContenidoP),
+                                  getAutorP(Publicacion, AutorP), getMuroP(Publicacion, MuroP), getComparteP(Publicacion, ComparteP), getRecibeP(Publicacion, RecibeP),
+                                  number_string(IdP, StringIdP), number_string(IdOriginalP, StringIdOriginalP), fechaAString(FechaP, StringFechaP),
+                                  string_concat("\nId publicacion: ", StringIdP, StringIdPOut), string_concat("\nId publicacion original: ", StringIdOriginalP, StringIdOriginalPOut), 
+                                  string_concat("\nFecha publicacion: ", StringFechaP, StringFechaOut), string_concat("\nTipo publicacion: ", TipoP, TipoPOut),
+                                  string_concat("\nContenido publicacion: ", ContenidoP, ContenidoPOut), string_concat("\nCuenta que creo publicacion: ", AutorP, AutorPOut),
+                                  string_concat("\nPublicacion dirigida a: ", MuroP, MuroPOut), string_concat("\nCuenta que compartio publicacion: ", ComparteP, CompartePOut),
+                                  string_concat("\nCuenta que recibio publicacion compartida: ", RecibeP, RecibePOut), string_concat(RecibePOut, "\n\n", RecibePFinal),
+                                  string_concat(StringIdPOut, StringIdOriginalPOut, S1), string_concat(StringFechaOut, TipoPOut, S2), string_concat(ContenidoPOut, AutorPOut, S3), string_concat(MuroPOut, CompartePOut, S4),
+                                  string_concat(S1, S2, Parte1S), string_concat(S3, S4, Parte2S),
+                                  string_concat(Parte1S, Parte2S, Final1S), string_concat(Final1S, RecibePFinal, StringFinalPublicacion), StringP = StringFinalPublicacion.

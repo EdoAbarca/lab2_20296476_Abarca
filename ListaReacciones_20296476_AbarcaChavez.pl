@@ -7,14 +7,19 @@
 
 % Pertenencia
 esListaReacciones([]).
-esListaReacciones([CabezaLR|_]) :- not(esReaccion(CabezaLR)), !, fail.
-esListaReacciones([_|RestoLR]) :- esListaReacciones(RestoLR).
+esListaReacciones([LRH|_]) :- not(esReaccion(LRH)), !, fail.
+esListaReacciones([_|LRT]) :- esListaReacciones(LRT).
 
 % Selectores
-% En proceso...
+getReaccionXIdR(_, [], _) :- !, fail.
+getReaccionXIdR(CommentId, [LRH|_], Reaccion) :- getIdR(LRH, IdR), IdR == CommentId, Reaccion = LRH.
+getReaccionXIdR(CommentId, [_|LRT], Reaccion) :- getReaccionXIdR(CommentId, LRT, Reaccion).
 
 % Modificadores
 agregarReaccion(NuevaReaccion, LR, LRAct) :- concatenar([NuevaReaccion], LR, LRAct).
 
 % Otros
-% En proceso...
+
+%Pasar de TDA ListaReacciones a string
+listaReaccionesAString([], StringAux, StringLR) :- string_concat(StringAux, "\n\n", StringFinal), StringLR = StringFinal.
+listaReaccionesAString([LRH|LRT], StringAux, StringLR) :- cuentaAString(LRH, "", StringReaccion), string_concat(StringAux, StringReaccion, StringTemp), listaReaccionesAString(LRT, StringTemp, StringLR).

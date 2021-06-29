@@ -1,14 +1,14 @@
 %TDA ListaCuentas
 % Composicion: [DatosCuenta1, DatosCuenta2, ..., DatosCuentaN]
-%              -> [TDA Cuenta, TDA Cuenta, ..., TDA Cuenta]
+%              -> [TDA CuentaUsuario, TDA CuentaUsuario, ..., TDA CuentaUsuario]
 
 % Constructores
 % En proceso...
 
 % Pertenencia
 esListaCuentas([]).
-esListaCuentas([CabezaLC|_]) :- not(esCuentaUsuario(CabezaLC)), !, fail.
-esListaCuentas([_|RestoLC]) :- esListaCuentas(RestoLC).
+esListaCuentas([LCH|_]) :- not(esCuentaUsuario(LCH)), !, fail.
+esListaCuentas([_|LCT]) :- esListaCuentas(LCT).
 
 % Selectores
 getCuentaXUsuario([], _, _) :- !, fail.
@@ -17,23 +17,30 @@ getCuentaXUsuario([_|LCT], Usuario, Cuenta) :- getCuentaXUsuario(LCT, Usuario, C
 
 % Modificadores
 % Agregar nueva cuenta
-agregarCuenta(ListaCuentas, NuevaCuenta, ListaCuentasAct) :- concatenar([NuevaCuenta], ListaCuentas, ListaCuentasAct).
+agregarCuenta(Cuenta, LC, LCAct) :- concatenar([Cuenta], LC, LCAct).
 
 % Actualizar cuenta (principalmente por temas de seguidores/seguidos)
-actualizarListaCuentas(ListaCuentas, CuentaOr, CuentaAct, ListaCuentasAct) :- reemplazar(ListaCuentas, CuentaOr, CuentaAct, ListaCuentasAct).
+actualizarListaCuentas(LC, Cuenta, CuentaAct, LCAct) :- reemplazar(LC, Cuenta, CuentaAct, LCAct).
 
 % Otros
 % Verificar que el usuario no esté en uso
 estaUsuarioDisponible(_, []).
-estaUsuarioDisponible(U, [HLU|_]) :- getUsuarioC(U, NombreAUsar), getUsuarioC(HLU, NombreEnUso), NombreAUsar == NombreEnUso, !, fail.
-estaUsuarioDisponible(U, [_|ALU]) :- estaUsuarioDisponible(U, ALU).
+estaUsuarioDisponible(Cuenta, [LCH|_]) :- getUsuarioC(Cuenta, NombreAUsar), getUsuarioC(LCH, NombreEnUso), NombreAUsar == NombreEnUso, !, fail.
+estaUsuarioDisponible(Cuenta, [_|LCT]) :- estaUsuarioDisponible(Cuenta, LCT).
 
-%Validar credenciales ingresadas para iniciar sesion
+% Validador para revisar si es posible seguir a usuario
+sePuedeSeguir(UObj, UL, LC) :- getCuentaXUsuario(LC, UObj, Cuenta), getSeguidoresC(Cuenta, ListaSeguidores), not(estaEnSeguidores(UL, ListaSeguidores)).
+
+% Validar credenciales ingresadas para iniciar sesion
 validarCredenciales(_, _, []) :- !, fail.
-validarCredenciales(User, Pass, [HLU|_]) :- getUsuarioC(HLU, Usuario), getConstraseniaC(HLU, Contra), User == Usuario, Pass == Contra.
-validarCredenciales(User, Pass, [_|ALU]) :- validarCredenciales(User, Pass, ALU).
+validarCredenciales(Username, Password, [LCH|_]) :- getUsuarioC(LCH, NombreUsuario), getConstraseniaC(LCH, Contrasenia), Username == NombreUsuario, Password == Contrasenia.
+validarCredenciales(Username, Password, [_|LCT]) :- validarCredenciales(Username, Password, LCT).
 
-%Verificador que revisa si los usuarios ingresados como destinatarios estan en los contactos del usuario logueado
+% Verificador que revisa si los usuarios ingresados como destinatarios estan en los contactos del usuario logueado
 validarDestinos([], _, _).
 validarDestinos([DestActual|_], UL, LC) :- getCuentaXUsuario(LC, UL, CuentaUL), getSeguidosC(CuentaUL, SeguidosUL), not(estaEnSeguidos(DestActual, SeguidosUL)), !, fail.
 validarDestinos([_|RestoDestinos], UL, LC) :- validarDestinos(RestoDestinos, UL, LC).
+
+% Pasar de TDA ListaCuentas a string
+listaCuentasAString([], StringAux, StringLC) :- string_concat(StringAux, "\n\n", StringFinal), StringLC = StringFinal.
+listaCuentasAString([LCH|LCT], StringAux, StringLC) :- cuentaAString(LCH, StringCuenta), string_concat(StringAux, StringCuenta, StringTemp), listaCuentasAString(LCT, StringTemp, StringLC).

@@ -29,12 +29,3 @@ concatenar([X|D],B,[X|E]):-concatenar(D,B,E).
 reemplazar([X|List], X, Y, [Y|List]).
 reemplazar([Xf|XList], X, Y, [Xf|YList]) :-
     reemplazar(XList, X, Y, YList).
-
-%Manipula elemento de la lista:
-%manipular(2, [1,2,3], X). -> elimina 2
-%manipular(2, X, [1,2,3]). -> agrega 2 al inicio
-manipular(Elemento,[Elemento|Tail1],Tail1).
-manipular(Elemento,[Head|Tail1],[Head|Tail2]) :-
-        manipular(Elemento,Tail1,Tail2).
-
-%SUJETO A MODIFICACIONES
