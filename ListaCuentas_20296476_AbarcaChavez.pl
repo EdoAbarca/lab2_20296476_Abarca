@@ -2,8 +2,55 @@
 % Composicion: [DatosCuenta1, DatosCuenta2, ..., DatosCuentaN]
 %              -> [TDA CuentaUsuario, TDA CuentaUsuario, ..., TDA CuentaUsuario]
 
-% Constructores
-% En proceso...
+/*
+%Dominio
+LCH: TDA CuentaUsuario, elemento principal de LC
+LCT: TDA ListaCuentas, resto de elementos en LC
+Usuario: String, nombre de cuenta
+Cuenta: TDA CuentaUsuario
+LC: TDA ListaCuentas, coleccion de TDA CuentaUsuario
+LCAct: TDA ListaCuentas, con nuevo TDA Cuenta agregado al inicio
+CuentaAct: TDA CuentaUsuario, con lista seguidos | seguidores actualizado
+UObj: String, nombre cuenta apuntada
+UL: String, nombre cuenta logueada
+Username: String, credencial de usuario cuenta para iniciar sesion
+Password: String, credencial de contrasenia cuenta para iniciar sesion
+
+%Predicados
+esListaCuentas([]).
+esListaCuentas([LCH|_])
+esListaCuentas([_|LCT])
+getCuentaXUsuario([], _, _)
+getCuentaXUsuario([LCH|_], Usuario, Cuenta)
+getCuentaXUsuario([_|LCT], Usuario, Cuenta)
+agregarCuenta(Cuenta, LC, LCAct)
+actualizarListaCuentas(LC, Cuenta, CuentaAct, LCAct)
+estaUsuarioDisponible(_, []).
+estaUsuarioDisponible(Cuenta, [LCH|_])
+estaUsuarioDisponible(Cuenta, [_|LCT])
+sePuedeSeguir(UObj, UL, LC)
+validarCredenciales(_, _, []) :- !, fail.
+validarCredenciales(Username, Password, [LCH|_])
+validarCredenciales(Username, Password, [_|LCT])
+
+%Metas
+%Principales
+esListaCuentas
+agregarCuenta
+actualizarListaCuentas
+estaUsuarioDisponible
+sePuedeSeguir
+validarCredenciales
+
+%Secundarias
+getCuentaXUsuario
+
+%Clausulas
+%Hechos y reglas
+*/
+
+% Constructor
+tdaLCVacio(LC) :- LC = [].
 
 % Pertenencia
 esListaCuentas([]).
@@ -40,7 +87,3 @@ validarCredenciales(Username, Password, [_|LCT]) :- validarCredenciales(Username
 validarDestinos([], _, _).
 validarDestinos([DestActual|_], UL, LC) :- getCuentaXUsuario(LC, UL, CuentaUL), getSeguidosC(CuentaUL, SeguidosUL), not(estaEnSeguidos(DestActual, SeguidosUL)), !, fail.
 validarDestinos([_|RestoDestinos], UL, LC) :- validarDestinos(RestoDestinos, UL, LC).
-
-% Pasar de TDA ListaCuentas a string
-listaCuentasAString([], StringAux, StringLC) :- string_concat(StringAux, "\n\n", StringFinal), StringLC = StringFinal.
-listaCuentasAString([LCH|LCT], StringAux, StringLC) :- cuentaAString(LCH, StringCuenta), string_concat(StringAux, StringCuenta, StringTemp), listaCuentasAString(LCT, StringTemp, StringLC).

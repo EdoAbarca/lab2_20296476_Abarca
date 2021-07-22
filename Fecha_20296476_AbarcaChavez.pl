@@ -1,8 +1,43 @@
 % TDA Fecha
 % Composicion: [Dia, Mes, Anio] -> [integer, integer, integer]
 
-%Constructores
+/*
+%Dominio
+Dia: Entero positivo, dia para TDA Fecha
+Mes: Entero positivo, mes para TDA Fecha
+Anio: Entero positivo, anio para TDA Fecha
+Fecha: TDA, lista de 3 elementos que representa una fecha en formato [dd, mm, yyyy]
+StringF: Version en string del TDA Fecha, formato dd/mm/yyyy
+DiaString: Version en string de Dia
+MesString: Version en string de Mes
+AnioString: Version en string de Fecha
+
+%Predicados
+fecha(Dia, Mes, Anio, Fecha)
+obtenerDia(Fecha, Dia)
+obtenerMes(Fecha, Mes)
+obtenerAnio(Fecha, Anio)
+esFecha(Fecha)
+fechaAString(Fecha, StringF)
+
+%Metas
+% Principales
+fecha
+esFecha
+fechaAString
+
+% Secundarias
+obtenerDia
+obtenerMes
+obtenerAnio
+
+%Clausulas
+%Reglas y hechos
+*/
+
+%Constructor
 fecha(Dia, Mes, Anio, Fecha) :- Fecha = [Dia, Mes, Anio].
+
 %Selectores
 obtenerDia(Fecha, Dia) :-   [Dia|_] = Fecha.
 obtenerMes(Fecha, Mes) :-   [_|[Mes|_]] = Fecha.
@@ -16,7 +51,7 @@ esFecha(Fecha) :- largo(Fecha, L), L =\= 3, !, fail.
 %2) Los elementos dentro de la lista deben ser enteros
 esFecha(Fecha) :- obtenerDia(Fecha, Dia), not(integer(Dia)), !, fail.
 esFecha(Fecha) :- obtenerMes(Fecha, Mes), not(integer(Mes)), !, fail.
-esFecha(Fecha) :- obtenerAnio(F, Anio), not(integer(Anio)), !, fail.
+esFecha(Fecha) :- obtenerAnio(Fecha, Anio), not(integer(Anio)), !, fail.
 %3) Se debe verificar el dominio de cada elemento
 /*
  * Dominios a considerar:
@@ -33,7 +68,7 @@ esFecha(Fecha) :- obtenerDia(Fecha, Dia), (Dia > 31 ; Dia < 1), !, fail.
 esFecha(Fecha) :- obtenerMes(Fecha, Mes), (Mes > 12 ; Mes < 1), !, fail.
 esFecha(Fecha) :- obtenerAnio(Fecha, Anio), (Anio > 2021 ; Anio < 1972), !, fail.
 %Fecha limite para fecha actual, sujeta a entrega de esta implementacion
-esFecha(Fecha) :- obtenerDia(Fecha, Dia), obtenerMes(Fecha, Mes), obtenerAnio(Fecha, Anio), (Mes >= 7), (Anio >= 2021), (Dia > 2), !, fail.
+esFecha(Fecha) :- obtenerDia(Fecha, Dia), obtenerMes(Fecha, Mes), obtenerAnio(Fecha, Anio), (Mes >= 7), (Anio >= 2021), (Dia > 12), !, fail.
 %Casos por mes
 %Febrero
 esFecha(Fecha) :- obtenerDia(Fecha, Dia), obtenerMes(Fecha, Mes), obtenerAnio(Fecha, Anio), Mes == 2, Bisiesto is mod(Anio, 4), Bisiesto =\= 0, Dia > 28, !, fail.
@@ -49,6 +84,6 @@ esFecha(_) :- !, true.
 %Sin modificadores.
 
 %Otros
-% Pasar TDA Fecha a string
-fechaAString(Fecha, StringF) :- obtenerDia(Fecha, Dia), number_string(Dia, DiaString) obtenerMes(Fecha, Mes), number_string(Mes, MesString), obtenerAnio(Fecha, Anio), number_string(Anio, AnioString),
+% Convertir TDA Fecha a string
+fechaAString(Fecha, StringF) :- obtenerDia(Fecha, Dia), number_string(Dia, DiaString), obtenerMes(Fecha, Mes), number_string(Mes, MesString), obtenerAnio(Fecha, Anio), number_string(Anio, AnioString),
                 string_concat(DiaString, "/", Parte1S), string_concat(MesString, "/", Parte2S), string_concat(Parte1S, Parte2S, StringDiaYMes), string_concat(StringDiaYMes, AnioString, StringFecha), StringF = StringFecha.

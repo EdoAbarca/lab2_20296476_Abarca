@@ -2,8 +2,40 @@
 % Composicion: [DatosReaccion1, DatosReaccion2, ...,
 % DatosReaccionN] -> [TDA Reaccion, TDA Reaccion, ..., TDA Reaccion]
 
+/*
+%Dominio
+LRH: TDA Reaccion, elemento principal TDA ListaReacciones
+LRT: TDA ListaReacciones, resto de elementos TDA ListaReacciones
+CommentId: Entero, identificador de comentario TDA reaccion
+Reaccion: TDA Reaccion, retorno de TDA luego de encontrar coincidencia con CommentId
+NuevaReaccion: TDA Reaccion, creado luego de llamar a los predicados principales respectivos (socialNetworkLike | socialNetworkComment)
+LR: TDA ListaReacciones, contenedor de TDAs Reaccion
+LRAct: TDA ListaReacciones, contenedor de TDAs Reaccion con NuevaReaccion agregada al inicio
+
+%Predicados
+esListaReacciones([])
+esListaReacciones([LRH|_])
+esListaReacciones([_|LRT])
+getReaccionXIdR(_, [], _)
+getReaccionXIdR(CommentId, [LRH|_], Reaccion) 
+getReaccionXIdR(CommentId, [_|LRT], Reaccion)
+agregarReaccion(NuevaReaccion, LR, LRAct)
+
+%Metas
+%Principales
+esListaReacciones
+getReaccionXIdR
+agregarReaccion
+
+%Secundarias
+getReaccionXIdR
+
+%Clausulas
+%Hechos y reglas
+*/
+
 % Constructores
-% En proceso...
+tdaLRVacio(LR) :- LR = [].
 
 % Pertenencia
 esListaReacciones([]).
@@ -20,6 +52,3 @@ agregarReaccion(NuevaReaccion, LR, LRAct) :- concatenar([NuevaReaccion], LR, LRA
 
 % Otros
 
-%Pasar de TDA ListaReacciones a string
-listaReaccionesAString([], StringAux, StringLR) :- string_concat(StringAux, "\n\n", StringFinal), StringLR = StringFinal.
-listaReaccionesAString([LRH|LRT], StringAux, StringLR) :- cuentaAString(LRH, "", StringReaccion), string_concat(StringAux, StringReaccion, StringTemp), listaReaccionesAString(LRT, StringTemp, StringLR).
