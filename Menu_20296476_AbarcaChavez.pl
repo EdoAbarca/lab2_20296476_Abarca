@@ -312,7 +312,7 @@ socialNetworkPost(Sn7, F, "HolaAa", [], Sn8),
 socialNetworkLogin(Sn8, "C", "D", Sn9),
 socialNetworkShare(Sn9, F, 0, ["E"], Sn10).
 
-4) Error: Destino(s) no es contacto de cuenta logueada
+4) Error: Destino(s) no es(son) contacto(s) de cuenta logueada
 fecha(25,6,2021, F), socialNetworkVacio("InstaBook", F, Sn1),
 socialNetworkRegister(Sn1, F, "A", "B", Sn2),
 socialNetworkRegister(Sn2, F, "C", "D", Sn3),
@@ -375,6 +375,8 @@ Pruebas: 10
  - Fallidas: 5
 
 Ejemplos de uso:
+
+No hay actualizacion de Sn1 en este predicado, por lo que no seguira la estructura presentada anteriormente en los ejemplos de uso.
 
 1) Ejemplo correlativo 1 (No canon): Muestra de informacion red social sin usuario logueado
 fecha(25,6,2021, F), socialNetworkVacio("InstaBook", F, Sn1),
@@ -488,7 +490,7 @@ a) Publicacion original -> IdOriginalP == 0 -> Autor publicacion debe estar en c
 a.1) Se comenta una publicacion original -> CommentId == 0
 a.2) Se responde un comentario dentro de una publicacion original -> PostId y CommentId deben coincidir con la reaccion a encontrar -> CommentId > 0
 
-b) Publicacion compartida -> IdOriginalP =\= 0 Cuenta que comparte debe estar en contactos de cuenta logueada (i.e., cuenta logueada debe seguir a cuenta que comparte publicacion)
+b) Publicacion compartida -> IdOriginalP =\= 0 -> Cuenta que comparte debe estar en contactos de cuenta logueada (i.e., cuenta logueada debe seguir a cuenta que comparte publicacion)
 b.3) Se comenta una publicacion compartida -> CommentId == 0
 b.4) Se responde un comentario dentro de una publicacion compartida -> PostId y CommentId deben coincidir con la reaccion a encontrar -> CommentId > 0
 */
@@ -525,11 +527,42 @@ socialNetworkComment(Sn1, Fecha, PostId, CommentId, TextoComentario, Sn2) :- esS
 
 
 /*
-Pruebas: 36
- - Exitosas: 12
- - Fallidas: 24
+Pruebas: 38
+ - Exitosas: 13
+ - Fallidas: 25
 
 Ejemplos de uso:
+
+1) Ejemplo simple de comentario a publicacion
+fecha(25,6,2021, F), socialNetworkVacio("InstaBook", F, Sn1),
+socialNetworkRegister(Sn1, F, "A", "B", Sn2),
+socialNetworkLogin(Sn2, "A", "B", Sn3),
+socialNetworkPost(Sn3, F, ":)", [], Sn4),
+socialNetworkLogin(Sn4, "A", "B", Sn5),
+socialNetworkComment(Sn5, F, 1, 0, ":(", Sn6).
+
+2) Mismo caso anterior, pero se toman los resultados de las variables para demostrar el retorno 'true.' cuando Sn2 no es variable.
+socialNetworkComment(["InstaBook", [25, 6, 2021], ["A", [["A", "B", [25, 6, 2021], [], []]], [[1, 0, [25, 6, 2021], "Texto", ":)", "A", "A", "", ""]], []]], [25, 6, 2021], 1, 0, ":(",  ["InstaBook", [25, 6, 2021], ["", [["A", "B", [25, 6, 2021], [], []]], [[1, 0, [25, 6, 2021], "Texto", ":)", "A", "A", "", ""]], [[1, 1, 0, [25, 6, 2021], "A", "Comentario", ":("]]]]).
+
+3) Error: Publicacion con IdPost no existe
+fecha(25,6,2021, F), socialNetworkVacio("InstaBook", F, Sn1),
+socialNetworkRegister(Sn1, F, "A", "B", Sn2),
+socialNetworkLogin(Sn2, "A", "B", Sn3),
+socialNetworkPost(Sn3, F, ":)", [], Sn4),
+socialNetworkLogin(Sn4, "A", "B", Sn5),
+socialNetworkComment(Sn5, F, 2, 0, ":(", Sn6).
+
+4) Error: Reaccion con CommentId no existe
+fecha(25,6,2021, F), socialNetworkVacio("InstaBook", F, Sn1),
+socialNetworkRegister(Sn1, F, "A", "B", Sn2),
+socialNetworkLogin(Sn2, "A", "B", Sn3),
+socialNetworkPost(Sn3, F, ":)", [], Sn4),
+socialNetworkLogin(Sn4, "A", "B", Sn5),
+socialNetworkComment(Sn5, F, 1, 1, ":(", Sn6).
+
+5) Error: Se intenta comentar un Like (A presentar en siguiente predicado)
+
+Casos presentados en inicio de predicado:
 
 a.1)
 
@@ -691,109 +724,34 @@ Salida: Sn2 (TDA SocialNetwork luego de aplicar socialNetworkLike)
 */
 socialNetworkLike(Sn1, Fecha, PostId, CommentId, Sn2) :- esSocialNetwork(Sn1), esFecha(Fecha), integer(PostId), integer(CommentId), (var(Sn2);esSocialNetwork(Sn2)),
                         getContenidoSN(Sn1, ContSN), getUsuarioLogueado(ContSN, UL), getListaCuentas(ContSN, LC), getListaPublicaciones(ContSN, LP), getListaReacciones(ContSN, LR),
-                        CommentId == 0, getPublicacionXId(PostId, LP, Publicacion), getIdP(Publicacion, IdP), IdP == PostId,
+                        UL \== "", CommentId == 0, getPublicacionXId(PostId, LP, Publicacion), getIdP(Publicacion, IdP), IdP == PostId,
     					largo(LR, LargoLR), IdR is LargoLR+1, crearReaccion(IdR, PostId, CommentId, Fecha, UL, "Like", "", NuevaReaccion), agregarReaccion(NuevaReaccion, LR, LRAct), 
                         actualizarContenidoSN("", LC, LP, LRAct, ContSN2), actualizarSocialNetwork(Sn1, ContSN2, Sn1Act), Sn2 = Sn1Act.
 
 socialNetworkLike(Sn1, Fecha, PostId, CommentId, Sn2) :- esSocialNetwork(Sn1), esFecha(Fecha), integer(PostId), integer(CommentId), (var(Sn2);esSocialNetwork(Sn2)),
                         getContenidoSN(Sn1, ContSN), getUsuarioLogueado(ContSN, UL), getListaCuentas(ContSN, LC), getListaPublicaciones(ContSN, LP), getListaReacciones(ContSN, LR),
-                        CommentId > 0,  getPublicacionXId(PostId, LP, Publicacion), getIdP(Publicacion, IdP), IdP == PostId,
+                        UL \== "", CommentId > 0,  getPublicacionXId(PostId, LP, Publicacion), getIdP(Publicacion, IdP), IdP == PostId,
     					getReaccionXIdR(CommentId, LR, Reaccion), getIdR(Reaccion, IdReaccion), getIdPR(Reaccion, IdPR), getTipoR(Reaccion, TipoR), IdReaccion = CommentId, IdPR == PostId, TipoR == "Comentario",
     					largo(LR, LargoLR), IdR is LargoLR+1, crearReaccion(IdR, PostId, CommentId, Fecha, UL, "Like", "", NuevaReaccion), agregarReaccion(NuevaReaccion, LR, LRAct), 
                         actualizarContenidoSN("", LC, LP, LRAct, ContSN2), actualizarSocialNetwork(Sn1, ContSN2, Sn1Act), Sn2 = Sn1Act.
 
 /*
-Pruebas: 12
- - Exitosas: 8
- - Fallidas: 4
+Pruebas: 20
+ - Exitosas: 12
+ - Fallidas: 8
 
 Ejemplos de uso:
 
-1) Correlativo 1: Like a publicacion
+1) Ejemplo simple de like:
 fecha(25,6,2021, F), socialNetworkVacio("InstaBook", F, Sn1),
 socialNetworkRegister(Sn1, F, "A", "B", Sn2),
-socialNetworkRegister(Sn2, F, "C", "D", Sn3),
-socialNetworkRegister(Sn3, F, "E", "F", Sn4),
-socialNetworkLogin(Sn4, "E", "F", Sn5),
-socialNetworkPost(Sn5, F, "¿Que sucede?", [], Sn6),
-socialNetworkLogin(Sn6, "A", "B", Sn7),
-socialNetworkFollow(Sn7, "C", Sn8),
-socialNetworkLogin(Sn8, "A", "B", Sn9),
-socialNetworkFollow(Sn9, "E", Sn10),
-socialNetworkLogin(Sn10, "A", "B", Sn11),
-socialNetworkPost(Sn11, F, "Hola a mis amigos! :D", ["C", "E"], Sn12),
-socialNetworkLogin(Sn12, "C", "D", Sn13),
-socialNetworkFollow(Sn13, "A", Sn14),
-socialNetworkLogin(Sn14, "E", "F", Sn15),
-socialNetworkFollow(Sn15, "A", Sn16),
-socialNetworkLogin(Sn16, "C", "D", Sn17),
-socialNetworkFollow(Sn17, "E", Sn18),
-socialNetworkLogin(Sn18, "E", "F", Sn19),
-socialNetworkFollow(Sn19, "C", Sn20),
-socialNetworkRegister(Sn20, F, "G", "H", Sn21),
-socialNetworkRegister(Sn21, F, "I", "J", Sn22),
-socialNetworkLogin(Sn22, "C", "D", Sn23),
-socialNetworkFollow(Sn23, "G", Sn24),
-socialNetworkLogin(Sn24, "C", "D", Sn25),
-socialNetworkFollow(Sn25, "I", Sn26),
-socialNetworkLogin(Sn26, "C", "D", Sn27),
-socialNetworkShare(Sn27, F, 1, ["G", "I"], Sn28),
-socialNetworkLogin(Sn28, "C", "D", Sn29),
-socialNetworkComment(Sn29, F, 1, 0, "Hola pibe", Sn30),
-socialNetworkLogin(Sn30, "G", "H", Sn31),
-socialNetworkFollow(Sn31, "C", Sn32),
-socialNetworkLogin(Sn32, "G", "H", Sn33),
-socialNetworkComment(Sn33, F, 4, 0, "¿?", Sn34),
-socialNetworkLogin(Sn34, "A", "B", Sn35),
-socialNetworkComment(Sn35, F, 1, 1, "No descuides el lab, esa cosa es interminable D:", Sn36),
-socialNetworkLogin(Sn36, "C", "D", Sn37),
-socialNetworkComment(Sn37, F, 4, 2, "Es por el lab man", Sn38),
-socialNetworkLogin(Sn38, "G", "H", Sn39),
-socialNetworkLike(Sn39, F, 4, 0, Sn40).
+socialNetworkLogin(Sn2, "A", "B", Sn3),
+socialNetworkPost(Sn3, F, ":)", [], Sn4),
+socialNetworkLogin(Sn4, "A", "B", Sn5),
+socialNetworkLike(Sn5, F, 1, 0, Sn6).
 
-2) Correlativo 2: Like a comentario
-fecha(25,6,2021, F), socialNetworkVacio("InstaBook", F, Sn1),
-socialNetworkRegister(Sn1, F, "A", "B", Sn2),
-socialNetworkRegister(Sn2, F, "C", "D", Sn3),
-socialNetworkRegister(Sn3, F, "E", "F", Sn4),
-socialNetworkLogin(Sn4, "E", "F", Sn5),
-socialNetworkPost(Sn5, F, "¿Que sucede?", [], Sn6),
-socialNetworkLogin(Sn6, "A", "B", Sn7),
-socialNetworkFollow(Sn7, "C", Sn8),
-socialNetworkLogin(Sn8, "A", "B", Sn9),
-socialNetworkFollow(Sn9, "E", Sn10),
-socialNetworkLogin(Sn10, "A", "B", Sn11),
-socialNetworkPost(Sn11, F, "Hola a mis amigos! :D", ["C", "E"], Sn12),
-socialNetworkLogin(Sn12, "C", "D", Sn13),
-socialNetworkFollow(Sn13, "A", Sn14),
-socialNetworkLogin(Sn14, "E", "F", Sn15),
-socialNetworkFollow(Sn15, "A", Sn16),
-socialNetworkLogin(Sn16, "C", "D", Sn17),
-socialNetworkFollow(Sn17, "E", Sn18),
-socialNetworkLogin(Sn18, "E", "F", Sn19),
-socialNetworkFollow(Sn19, "C", Sn20),
-socialNetworkRegister(Sn20, F, "G", "H", Sn21),
-socialNetworkRegister(Sn21, F, "I", "J", Sn22),
-socialNetworkLogin(Sn22, "C", "D", Sn23),
-socialNetworkFollow(Sn23, "G", Sn24),
-socialNetworkLogin(Sn24, "C", "D", Sn25),
-socialNetworkFollow(Sn25, "I", Sn26),
-socialNetworkLogin(Sn26, "C", "D", Sn27),
-socialNetworkShare(Sn27, F, 1, ["G", "I"], Sn28),
-socialNetworkLogin(Sn28, "C", "D", Sn29),
-socialNetworkComment(Sn29, F, 1, 0, "Hola pibe", Sn30),
-socialNetworkLogin(Sn30, "G", "H", Sn31),
-socialNetworkFollow(Sn31, "C", Sn32),
-socialNetworkLogin(Sn32, "G", "H", Sn33),
-socialNetworkComment(Sn33, F, 4, 0, "¿?", Sn34),
-socialNetworkLogin(Sn34, "A", "B", Sn35),
-socialNetworkComment(Sn35, F, 1, 1, "No descuides el lab, esa cosa es interminable D:", Sn36),
-socialNetworkLogin(Sn36, "C", "D", Sn37),
-socialNetworkComment(Sn37, F, 4, 2, "Es por el lab man", Sn38),
-socialNetworkLogin(Sn38, "G", "H", Sn39),
-socialNetworkLike(Sn39, F, 4, 0, Sn40),
-socialNetworkLogin(Sn40, "G", "H", Sn41),
-socialNetworkLike(Sn41, F, 4, 4, Sn42).
+2) Mismo caso anterior, pero se toman los resultados de las variables para demostrar el retorno 'true.' cuando Sn2 no es variable.
+socialNetworkLike(["InstaBook", [25, 6, 2021], ["A", [["A", "B", [25, 6, 2021], [], []]], [[1, 0, [25, 6, 2021], "Texto", ":)", "A", "A", "", ""]], []]], [25, 6, 2021], 1, 0, ["InstaBook", [25, 6, 2021], ["", [["A", "B", [25, 6, 2021], [], []]], [[1, 0, [25, 6, 2021], "Texto", ":)", "A", "A", "", ""]], [[1, 1, 0, [25, 6, 2021], "A", "Like", ""]]]]).
 
 3) Error 1: Publicacion con PostId no existe.
 fecha(25,6,2021, F), socialNetworkVacio("InstaBook", F, Sn1),
@@ -880,6 +838,195 @@ socialNetworkLogin(Sn38, "G", "H", Sn39),
 socialNetworkLike(Sn39, F, 4, 0, Sn40),
 socialNetworkLogin(Sn40, "G", "H", Sn41),
 socialNetworkLike(Sn41, F, 4, -1, Sn42).
+
+5) Error 3: Like de cuenta es repetido
+
+5.1) A publicacion
+fecha(25,6,2021, F), socialNetworkVacio("InstaBook", F, Sn1),
+socialNetworkRegister(Sn1, F, "A", "B", Sn2),
+socialNetworkRegister(Sn2, F, "C", "D", Sn3),
+socialNetworkRegister(Sn3, F, "E", "F", Sn4),
+socialNetworkLogin(Sn4, "E", "F", Sn5),
+socialNetworkPost(Sn5, F, "¿Que sucede?", [], Sn6),
+socialNetworkLogin(Sn6, "A", "B", Sn7),
+socialNetworkFollow(Sn7, "C", Sn8),
+socialNetworkLogin(Sn8, "A", "B", Sn9),
+socialNetworkFollow(Sn9, "E", Sn10),
+socialNetworkLogin(Sn10, "A", "B", Sn11),
+socialNetworkPost(Sn11, F, "Hola a mis amigos! :D", ["C", "E"], Sn12),
+socialNetworkLogin(Sn12, "C", "D", Sn13),
+socialNetworkFollow(Sn13, "A", Sn14),
+socialNetworkLogin(Sn14, "E", "F", Sn15),
+socialNetworkFollow(Sn15, "A", Sn16),
+socialNetworkLogin(Sn16, "C", "D", Sn17),
+socialNetworkFollow(Sn17, "E", Sn18),
+socialNetworkLogin(Sn18, "E", "F", Sn19),
+socialNetworkFollow(Sn19, "C", Sn20),
+socialNetworkRegister(Sn20, F, "G", "H", Sn21),
+socialNetworkRegister(Sn21, F, "I", "J", Sn22),
+socialNetworkLogin(Sn22, "C", "D", Sn23),
+socialNetworkFollow(Sn23, "G", Sn24),
+socialNetworkLogin(Sn24, "C", "D", Sn25),
+socialNetworkFollow(Sn25, "I", Sn26),
+socialNetworkLogin(Sn26, "C", "D", Sn27),
+socialNetworkShare(Sn27, F, 1, ["G", "I"], Sn28),
+socialNetworkLogin(Sn28, "C", "D", Sn29),
+socialNetworkComment(Sn29, F, 1, 0, "Hola pibe", Sn30),
+socialNetworkLogin(Sn30, "G", "H", Sn31),
+socialNetworkFollow(Sn31, "C", Sn32),
+socialNetworkLogin(Sn32, "G", "H", Sn33),
+socialNetworkComment(Sn33, F, 4, 0, "¿?", Sn34),
+socialNetworkLogin(Sn34, "A", "B", Sn35),
+socialNetworkComment(Sn35, F, 1, 1, "No descuides el lab, esa cosa es interminable D:", Sn36),
+socialNetworkLogin(Sn36, "C", "D", Sn37),
+socialNetworkComment(Sn37, F, 4, 2, "Es por el lab man", Sn38),
+socialNetworkLogin(Sn38, "G", "H", Sn39),
+socialNetworkLike(Sn39, F, 4, 0, Sn40),
+socialNetworkLogin(Sn40, "G", "H", Sn41),
+socialNetworkLike(Sn41, F, 4, 0, Sn42).
+
+5.2) A comentario
+fecha(25,6,2021, F), socialNetworkVacio("InstaBook", F, Sn1),
+socialNetworkRegister(Sn1, F, "A", "B", Sn2),
+socialNetworkRegister(Sn2, F, "C", "D", Sn3),
+socialNetworkRegister(Sn3, F, "E", "F", Sn4),
+socialNetworkLogin(Sn4, "E", "F", Sn5),
+socialNetworkPost(Sn5, F, "¿Que sucede?", [], Sn6),
+socialNetworkLogin(Sn6, "A", "B", Sn7),
+socialNetworkFollow(Sn7, "C", Sn8),
+socialNetworkLogin(Sn8, "A", "B", Sn9),
+socialNetworkFollow(Sn9, "E", Sn10),
+socialNetworkLogin(Sn10, "A", "B", Sn11),
+socialNetworkPost(Sn11, F, "Hola a mis amigos! :D", ["C", "E"], Sn12),
+socialNetworkLogin(Sn12, "C", "D", Sn13),
+socialNetworkFollow(Sn13, "A", Sn14),
+socialNetworkLogin(Sn14, "E", "F", Sn15),
+socialNetworkFollow(Sn15, "A", Sn16),
+socialNetworkLogin(Sn16, "C", "D", Sn17),
+socialNetworkFollow(Sn17, "E", Sn18),
+socialNetworkLogin(Sn18, "E", "F", Sn19),
+socialNetworkFollow(Sn19, "C", Sn20),
+socialNetworkRegister(Sn20, F, "G", "H", Sn21),
+socialNetworkRegister(Sn21, F, "I", "J", Sn22),
+socialNetworkLogin(Sn22, "C", "D", Sn23),
+socialNetworkFollow(Sn23, "G", Sn24),
+socialNetworkLogin(Sn24, "C", "D", Sn25),
+socialNetworkFollow(Sn25, "I", Sn26),
+socialNetworkLogin(Sn26, "C", "D", Sn27),
+socialNetworkShare(Sn27, F, 1, ["G", "I"], Sn28),
+socialNetworkLogin(Sn28, "C", "D", Sn29),
+socialNetworkComment(Sn29, F, 1, 0, "Hola pibe", Sn30),
+socialNetworkLogin(Sn30, "G", "H", Sn31),
+socialNetworkFollow(Sn31, "C", Sn32),
+socialNetworkLogin(Sn32, "G", "H", Sn33),
+socialNetworkComment(Sn33, F, 4, 0, "¿?", Sn34),
+socialNetworkLogin(Sn34, "A", "B", Sn35),
+socialNetworkComment(Sn35, F, 1, 1, "No descuides el lab, esa cosa es interminable D:", Sn36),
+socialNetworkLogin(Sn36, "C", "D", Sn37),
+socialNetworkComment(Sn37, F, 4, 2, "Es por el lab man", Sn38),
+socialNetworkLogin(Sn38, "G", "H", Sn39),
+socialNetworkLike(Sn39, F, 4, 0, Sn40),
+socialNetworkLogin(Sn40, "G", "H", Sn41),
+socialNetworkLike(Sn41, F, 4, 4, Sn42),
+socialNetworkLogin(Sn42, "G", "H", Sn43),
+socialNetworkLike(Sn43, F, 4, 4, Sn44).
+
+6) Error 4: Se intenta comentar un Like (Pendiente de comentario anterior)
+fecha(25,6,2021, F), socialNetworkVacio("InstaBook", F, Sn1),
+socialNetworkRegister(Sn1, F, "A", "B", Sn2),
+socialNetworkLogin(Sn2, "A", "B", Sn3),
+socialNetworkPost(Sn3, F, ":)", [], Sn4),
+socialNetworkLogin(Sn4, "A", "B", Sn5),
+socialNetworkLike(Sn5, F, 1, 0, Sn6),
+socialNetworkLogin(Sn6, "A", "B", Sn7),
+socialNetworkComment(Sn7, F, 1, 1, ":(", Sn8).
+
+7) Correlativo 1: Like a publicacion
+fecha(25,6,2021, F), socialNetworkVacio("InstaBook", F, Sn1),
+socialNetworkRegister(Sn1, F, "A", "B", Sn2),
+socialNetworkRegister(Sn2, F, "C", "D", Sn3),
+socialNetworkRegister(Sn3, F, "E", "F", Sn4),
+socialNetworkLogin(Sn4, "E", "F", Sn5),
+socialNetworkPost(Sn5, F, "¿Que sucede?", [], Sn6),
+socialNetworkLogin(Sn6, "A", "B", Sn7),
+socialNetworkFollow(Sn7, "C", Sn8),
+socialNetworkLogin(Sn8, "A", "B", Sn9),
+socialNetworkFollow(Sn9, "E", Sn10),
+socialNetworkLogin(Sn10, "A", "B", Sn11),
+socialNetworkPost(Sn11, F, "Hola a mis amigos! :D", ["C", "E"], Sn12),
+socialNetworkLogin(Sn12, "C", "D", Sn13),
+socialNetworkFollow(Sn13, "A", Sn14),
+socialNetworkLogin(Sn14, "E", "F", Sn15),
+socialNetworkFollow(Sn15, "A", Sn16),
+socialNetworkLogin(Sn16, "C", "D", Sn17),
+socialNetworkFollow(Sn17, "E", Sn18),
+socialNetworkLogin(Sn18, "E", "F", Sn19),
+socialNetworkFollow(Sn19, "C", Sn20),
+socialNetworkRegister(Sn20, F, "G", "H", Sn21),
+socialNetworkRegister(Sn21, F, "I", "J", Sn22),
+socialNetworkLogin(Sn22, "C", "D", Sn23),
+socialNetworkFollow(Sn23, "G", Sn24),
+socialNetworkLogin(Sn24, "C", "D", Sn25),
+socialNetworkFollow(Sn25, "I", Sn26),
+socialNetworkLogin(Sn26, "C", "D", Sn27),
+socialNetworkShare(Sn27, F, 1, ["G", "I"], Sn28),
+socialNetworkLogin(Sn28, "C", "D", Sn29),
+socialNetworkComment(Sn29, F, 1, 0, "Hola pibe", Sn30),
+socialNetworkLogin(Sn30, "G", "H", Sn31),
+socialNetworkFollow(Sn31, "C", Sn32),
+socialNetworkLogin(Sn32, "G", "H", Sn33),
+socialNetworkComment(Sn33, F, 4, 0, "¿?", Sn34),
+socialNetworkLogin(Sn34, "A", "B", Sn35),
+socialNetworkComment(Sn35, F, 1, 1, "No descuides el lab, esa cosa es interminable D:", Sn36),
+socialNetworkLogin(Sn36, "C", "D", Sn37),
+socialNetworkComment(Sn37, F, 4, 2, "Es por el lab man", Sn38),
+socialNetworkLogin(Sn38, "G", "H", Sn39),
+socialNetworkLike(Sn39, F, 4, 0, Sn40).
+
+8) Correlativo 2: Like a comentario
+fecha(25,6,2021, F), socialNetworkVacio("InstaBook", F, Sn1),
+socialNetworkRegister(Sn1, F, "A", "B", Sn2),
+socialNetworkRegister(Sn2, F, "C", "D", Sn3),
+socialNetworkRegister(Sn3, F, "E", "F", Sn4),
+socialNetworkLogin(Sn4, "E", "F", Sn5),
+socialNetworkPost(Sn5, F, "¿Que sucede?", [], Sn6),
+socialNetworkLogin(Sn6, "A", "B", Sn7),
+socialNetworkFollow(Sn7, "C", Sn8),
+socialNetworkLogin(Sn8, "A", "B", Sn9),
+socialNetworkFollow(Sn9, "E", Sn10),
+socialNetworkLogin(Sn10, "A", "B", Sn11),
+socialNetworkPost(Sn11, F, "Hola a mis amigos! :D", ["C", "E"], Sn12),
+socialNetworkLogin(Sn12, "C", "D", Sn13),
+socialNetworkFollow(Sn13, "A", Sn14),
+socialNetworkLogin(Sn14, "E", "F", Sn15),
+socialNetworkFollow(Sn15, "A", Sn16),
+socialNetworkLogin(Sn16, "C", "D", Sn17),
+socialNetworkFollow(Sn17, "E", Sn18),
+socialNetworkLogin(Sn18, "E", "F", Sn19),
+socialNetworkFollow(Sn19, "C", Sn20),
+socialNetworkRegister(Sn20, F, "G", "H", Sn21),
+socialNetworkRegister(Sn21, F, "I", "J", Sn22),
+socialNetworkLogin(Sn22, "C", "D", Sn23),
+socialNetworkFollow(Sn23, "G", Sn24),
+socialNetworkLogin(Sn24, "C", "D", Sn25),
+socialNetworkFollow(Sn25, "I", Sn26),
+socialNetworkLogin(Sn26, "C", "D", Sn27),
+socialNetworkShare(Sn27, F, 1, ["G", "I"], Sn28),
+socialNetworkLogin(Sn28, "C", "D", Sn29),
+socialNetworkComment(Sn29, F, 1, 0, "Hola pibe", Sn30),
+socialNetworkLogin(Sn30, "G", "H", Sn31),
+socialNetworkFollow(Sn31, "C", Sn32),
+socialNetworkLogin(Sn32, "G", "H", Sn33),
+socialNetworkComment(Sn33, F, 4, 0, "¿?", Sn34),
+socialNetworkLogin(Sn34, "A", "B", Sn35),
+socialNetworkComment(Sn35, F, 1, 1, "No descuides el lab, esa cosa es interminable D:", Sn36),
+socialNetworkLogin(Sn36, "C", "D", Sn37),
+socialNetworkComment(Sn37, F, 4, 2, "Es por el lab man", Sn38),
+socialNetworkLogin(Sn38, "G", "H", Sn39),
+socialNetworkLike(Sn39, F, 4, 0, Sn40),
+socialNetworkLogin(Sn40, "G", "H", Sn41),
+socialNetworkLike(Sn41, F, 4, 4, Sn42).
+
 
 Correlativo final: 
 Nadie se fijo en E y su publicacion. 
@@ -982,18 +1129,16 @@ socialNetworkComment(Sn43, F, 1, 0, "Al fin se logro echar a andar esto! *O*", S
 socialNetworkLogin(Sn44, "A", "B", Sn45),
 socialNetworkToString(Sn45, StrFinal),
 write(StrFinal).
-*/
 
-/*
-Por alguna razon, se corta la informacion de los 2 ultimos ejemplos presentados en el interprete, aun ingresando el comando w.
+Por alguna razon, se corta la informacion de los ejemplos que usan socialNetworkToString en el interprete, aun ingresando el comando w.
+Percance no se pudo solucionar.
 socialNetworkViral y socialNetworkSearch no implementados.
 
 Conteo final estimado pruebas laboratorio 2:
 
-Total: 130
-Acertadas: 63
-Fallidas: 67
+Total: 140
+Acertadas: 68
+Fallidas: 72
 
 */
-
 %//////////////////////////////////////////// Fin archivo ///////////////////////////////////////////////

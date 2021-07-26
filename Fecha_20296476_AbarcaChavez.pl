@@ -68,7 +68,7 @@ esFecha(Fecha) :- obtenerDia(Fecha, Dia), (Dia > 31 ; Dia < 1), !, fail.
 esFecha(Fecha) :- obtenerMes(Fecha, Mes), (Mes > 12 ; Mes < 1), !, fail.
 esFecha(Fecha) :- obtenerAnio(Fecha, Anio), (Anio > 2021 ; Anio < 1972), !, fail.
 %Fecha limite para fecha actual, sujeta a entrega de esta implementacion
-esFecha(Fecha) :- obtenerDia(Fecha, Dia), obtenerMes(Fecha, Mes), obtenerAnio(Fecha, Anio), (Mes >= 7), (Anio >= 2021), (Dia > 12), !, fail.
+esFecha(Fecha) :- obtenerDia(Fecha, Dia), obtenerMes(Fecha, Mes), obtenerAnio(Fecha, Anio), (Mes >= 7), (Anio >= 2021), (Dia > 26), !, fail.
 %Casos por mes
 %Febrero
 esFecha(Fecha) :- obtenerDia(Fecha, Dia), obtenerMes(Fecha, Mes), obtenerAnio(Fecha, Anio), Mes == 2, Bisiesto is mod(Anio, 4), Bisiesto =\= 0, Dia > 28, !, fail.
@@ -77,7 +77,7 @@ esFecha(Fecha) :- obtenerDia(Fecha, Dia), obtenerMes(Fecha, Mes), obtenerAnio(Fe
 esFecha(Fecha) :- obtenerDia(Fecha, Dia), obtenerMes(Fecha, Mes),
     (Mes == 4; Mes == 6; Mes == 9; Mes == 11), Dia > 30, !, fail.
 % Meses con 31 dias esta cubierto por la sentencia del predicado que verifica el dominio de esta, por lo que no sera implementado.
-% Todos los dominios verificados, el elemento ingresado es un TDA Fecha. ¿Es necesario el '!'?
+% Todos los dominios verificados, el elemento ingresado es un TDA Fecha. ¿Es necesario el operador corte?
 esFecha(_) :- !, true.
 
 %Modificadores

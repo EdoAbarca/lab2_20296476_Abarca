@@ -1,6 +1,6 @@
 %TDA ListaReacciones
-% Composicion: [DatosReaccion1, DatosReaccion2, ...,
-% DatosReaccionN] -> [TDA Reaccion, TDA Reaccion, ..., TDA Reaccion]
+% Composicion: [DatosReaccion1, DatosReaccion2, ..., DatosReaccionN] 
+%               -> [TDA Reaccion, TDA Reaccion, ..., TDA Reaccion]
 
 /*
 %Dominio
@@ -11,6 +11,8 @@ Reaccion: TDA Reaccion, retorno de TDA luego de encontrar coincidencia con Comme
 NuevaReaccion: TDA Reaccion, creado luego de llamar a los predicados principales respectivos (socialNetworkLike | socialNetworkComment)
 LR: TDA ListaReacciones, contenedor de TDAs Reaccion
 LRAct: TDA ListaReacciones, contenedor de TDAs Reaccion con NuevaReaccion agregada al inicio
+UL: Usuario de cuenta logueada al momento de crear la reaccion
+
 
 %Predicados
 esListaReacciones([])
@@ -20,15 +22,25 @@ getReaccionXIdR(_, [], _)
 getReaccionXIdR(CommentId, [LRH|_], Reaccion) 
 getReaccionXIdR(CommentId, [_|LRT], Reaccion)
 agregarReaccion(NuevaReaccion, LR, LRAct)
+existeReaccion(_, [])
+existeReaccion(CommentId, [LRH|_])
+existeReaccion(CommentId, [_|LRT])
+noSeRepiteLike(_, _, _, []).
+noSeRepiteLike(PostId, CommentId, UL, [LRH|_]) 
+noSeRepiteLike(PostId, CommentId, UL, [_|LRT])
+
 
 %Metas
 %Principales
 esListaReacciones
 getReaccionXIdR
 agregarReaccion
+existeReaccion
+noSeRepiteLike
 
 %Secundarias
 getReaccionXIdR
+
 
 %Clausulas
 %Hechos y reglas
@@ -51,4 +63,7 @@ getReaccionXIdR(CommentId, [_|LRT], Reaccion) :- getReaccionXIdR(CommentId, LRT,
 agregarReaccion(NuevaReaccion, LR, LRAct) :- concatenar([NuevaReaccion], LR, LRAct).
 
 % Otros
-
+% Verificar que no se repita un like en una publicacion o comentario de una misma cuenta
+noSeRepiteLike(_, _, _, []).
+noSeRepiteLike(PostId, CommentId, UL, [LRH|_]) :- getIdPR(LRH, IdPR), getIdRR(LRH, IdRR), getAutorR(LRH, AutorR), IdPR == PostId, IdRR == CommentId, AutorR == UL, !, fail.
+noSeRepiteLike(PostId, CommentId, UL, [_|LRT]) :- noSeRepiteLike(PostId, CommentId, UL, LRT).
